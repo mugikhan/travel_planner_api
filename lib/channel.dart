@@ -1,5 +1,7 @@
 import 'package:travel_planner_api/travel_planner_api.dart';
 
+import 'controller/heroes_controller.dart';
+
 /// This type initializes an application.
 ///
 /// Override methods in this class to set up routes and initialize services like
@@ -15,6 +17,8 @@ class TravelPlannerApiChannel extends ApplicationChannel {
   Future prepare() async {
     logger.onRecord.listen(
         (rec) => print("$rec ${rec.error ?? ""} ${rec.stackTrace ?? ""}"));
+
+    CORSPolicy.defaultPolicy.allowedOrigins = ["localhost:8888"];
   }
 
   /// Construct the request channel.
@@ -26,6 +30,8 @@ class TravelPlannerApiChannel extends ApplicationChannel {
   @override
   Controller get entryPoint {
     final router = Router();
+
+    router.route('/heroes').link(() => HeroesController());
 
     // Prefer to use `link` instead of `linkFunction`.
     // See: https://conduit.io/docs/http/request_controller/
