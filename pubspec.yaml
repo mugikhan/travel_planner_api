@@ -8,6 +8,8 @@ environment:
 
 dependencies:
   conduit: ^3.2.0
+  crypt: ^4.2.1
+  uuid: ^3.0.6
 
 dev_dependencies:
   test: ^1.21.6
