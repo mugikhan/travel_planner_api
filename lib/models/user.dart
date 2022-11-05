@@ -1,10 +1,5 @@
-// declare uuid: string;
-// declare givenName: string;
-// declare familyName: string;
-// declare emailAddress: string;
-// declare password: string;
-// declare profilePicture: string;
 import 'package:conduit/managed_auth.dart';
+import 'package:travel_planner_api/models/enums/verification_state.dart';
 import 'package:travel_planner_api/travel_planner_api.dart';
 import 'package:uuid/uuid.dart';
 
@@ -25,4 +20,21 @@ class _User extends ResourceOwnerTableDefinition {
   String? lastName;
   @Column(nullable: true)
   String? profilePicture;
+
+  Verification? verification;
+}
+
+class Verification extends ManagedObject<_Verification>
+    implements _Verification {}
+
+class _Verification {
+  @primaryKey
+  int? id;
+  @Column(unique: true)
+  String? code;
+  @Column(defaultValue: "'unverified'")
+  VerificationState? verificationState;
+
+  @Relate(#verification)
+  User? user;
 }

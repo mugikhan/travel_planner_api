@@ -10,7 +10,11 @@ dependencies:
   conduit: ^3.2.0
   crypt: ^4.2.1
   uuid: ^3.0.6
+  freezed_annotation: ^2.0.3
+  json_annotation: ^4.7.0
 
 dev_dependencies:
   test: ^1.21.6
   conduit_test: ^3.2.0
+  freezed: ^2.0.3+1
+  json_serializable: ^6.5.1

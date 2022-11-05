@@ -29,9 +29,13 @@ class UserController extends ResourceController {
 
   @Operation.post()
   Future<Response> createUser(@Bind.body() User user) async {
-    if (user.username == null || user.password == null) {
+    if (user.username == null || user.password == null || user.email == null) {
       return Response.badRequest(
-        body: {"error": "username and password required."},
+        body: {"error": "Email and password is required."},
+      );
+    } else if (user.firstName == null || user.lastName == null) {
+      return Response.badRequest(
+        body: {"error": "First name and last name is required."},
       );
     }
 
