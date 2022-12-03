@@ -1,6 +1,8 @@
 import 'package:conduit/conduit.dart';
-import 'package:crypt/crypt.dart';
+import 'package:conduit/managed_auth.dart';
 
+import '../models/response/error/error.dart';
+import '../models/response/success/success.dart';
 import '../models/user.dart';
 
 class UserController extends ResourceController {
@@ -28,29 +30,37 @@ class UserController extends ResourceController {
   }
 
   @Operation.post()
-  Future<Response> createUser(@Bind.body() User user) async {
-    if (user.username == null || user.password == null || user.email == null) {
+  Future<Response> loginUser(@Bind.body() User user) async {
+    if (user.password == null || user.username == null) {
       return Response.badRequest(
-        body: {"error": "Email and password is required."},
-      );
-    } else if (user.firstName == null || user.lastName == null) {
-      return Response.badRequest(
-        body: {"error": "First name and last name is required."},
+        body: {
+          "error": const ErrorResponse(
+            type: "missing required fields",
+            message: "Email and password is required.",
+            code: 400,
+          ).toJson(),
+        },
       );
     }
 
-    final salt = Crypt.sha256("fa0c2731ac59ba01", rounds: 10000).toString();
-    final hashedPassword = authServer!.hashPassword(user.password!, salt);
-
     final query = Query<User>(context!)
-      ..values = user
-      ..values.hashedPassword = hashedPassword
-      ..values.salt = salt
-      ..values.email = user.username
-      ..values.firstName = user.firstName
-      ..values.lastName = user.lastName;
+      ..where((u) => u.email).equalTo(user.email);
 
-    final u = await query.insert();
+    final u = await query.fetchOne();
+
+    if (u == null) {
+      return Response.badRequest(
+        body: {
+          "error": ErrorResponse(
+            type: "invalid data",
+            message: "${user.email} is not registered",
+            code: 400,
+          ).toJson(),
+        },
+      );
+    }
+
+    // Authorize token
     final token = await authServer!.authenticate(
       u.username,
       query.values.password,

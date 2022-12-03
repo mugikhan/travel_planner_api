@@ -3,6 +3,4 @@ database:
   password: travel_planner_pg
   host: localhost
   port: 5432
-  databaseName: travel_planner_db
-apiBaseURL: /
-identifier: 1
+  databaseName: postgres

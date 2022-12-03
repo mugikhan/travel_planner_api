@@ -1,4 +1,7 @@
 import 'package:conduit/managed_auth.dart';
+import 'package:travel_planner_api/controllers/login_controller.dart';
+import 'package:travel_planner_api/controllers/register_controller.dart';
+import 'package:travel_planner_api/models/user.dart';
 import 'package:travel_planner_api/travel_planner_api.dart';
 
 import 'configuration.dart';
@@ -36,7 +39,8 @@ class TravelPlannerApiChannel extends ApplicationChannel {
     );
 
     context = ManagedContext(dataModel, persistentStore);
-    authServer = AuthServer(ManagedAuthDelegate(context));
+    final delegate = ManagedAuthDelegate<User>(context);
+    authServer = AuthServer(delegate);
     CORSPolicy.defaultPolicy.allowedOrigins = ["localhost", "127.0.0.1"];
   }
 
@@ -60,10 +64,20 @@ class TravelPlannerApiChannel extends ApplicationChannel {
 
     router.route('/auth/token').link(() => AuthController(authServer));
 
+    router.route("/auth/code").link(() => AuthRedirectController(authServer));
+
+    router
+        .route('/register')
+        .link(() => RegisterController(context, authServer));
+
+    router.route('/login').link(() => LoginController(context, authServer));
+
     router
         .route('/users/[:id]')
         .link(() => Authorizer.bearer(authServer))!
         .link(() => UserController(context, authServer));
+
+    //.link(() => Authorizer(authServer))!
 
     return router;
   }
