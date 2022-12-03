@@ -1,9 +1,6 @@
 import 'package:conduit/managed_auth.dart';
 import 'package:travel_planner_api/models/enums/verification_state.dart';
 import 'package:travel_planner_api/travel_planner_api.dart';
-import 'package:uuid/uuid.dart';
-
-const uuidP = Uuid();
 
 class User extends ManagedObject<_User>
     implements _User, ManagedAuthResourceOwner<_User> {
@@ -35,6 +32,6 @@ class _Verification {
   @Column(defaultValue: "'unverified'")
   VerificationState? verificationState;
 
-  @Relate(#verification)
+  @Relate(#verification, isRequired: true, onDelete: DeleteRule.cascade)
   User? user;
 }

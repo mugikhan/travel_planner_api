@@ -1,6 +1,7 @@
 import 'package:conduit/managed_auth.dart';
 import 'package:travel_planner_api/travel_planner_api.dart';
 
+import 'configuration.dart';
 import 'controllers/heroes_controller.dart';
 import 'controllers/user_controller.dart';
 
@@ -23,17 +24,20 @@ class TravelPlannerApiChannel extends ApplicationChannel {
     logger.onRecord.listen(
         (rec) => print("$rec ${rec.error ?? ""} ${rec.stackTrace ?? ""}"));
     final dataModel = ManagedDataModel.fromCurrentMirrorSystem();
+    final config =
+        AppConfiguration.fromFile(File(options!.configurationFilePath!));
+    final db = config.database;
     final persistentStore = PostgreSQLPersistentStore.fromConnectionInfo(
-      "postgres",
-      "travel_planner_pg",
-      "localhost",
-      5432,
-      "travel_planner_db",
+      db.username,
+      db.password,
+      db.host,
+      db.port,
+      db.databaseName,
     );
 
     context = ManagedContext(dataModel, persistentStore);
     authServer = AuthServer(ManagedAuthDelegate(context));
-    CORSPolicy.defaultPolicy.allowedOrigins = ["localhost:8888"];
+    CORSPolicy.defaultPolicy.allowedOrigins = ["localhost", "127.0.0.1"];
   }
 
   /// Construct the request channel.
@@ -58,7 +62,7 @@ class TravelPlannerApiChannel extends ApplicationChannel {
 
     router
         .route('/users/[:id]')
-        .link(() => Authorizer(authServer))!
+        .link(() => Authorizer.bearer(authServer))!
         .link(() => UserController(context, authServer));
 
     return router;
