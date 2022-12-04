@@ -1,5 +1,4 @@
 import 'package:conduit/managed_auth.dart';
-import 'package:travel_planner_api/controllers/login_controller.dart';
 import 'package:travel_planner_api/controllers/register_controller.dart';
 import 'package:travel_planner_api/models/user.dart';
 import 'package:travel_planner_api/travel_planner_api.dart';
@@ -64,13 +63,14 @@ class TravelPlannerApiChannel extends ApplicationChannel {
 
     router.route('/auth/token').link(() => AuthController(authServer));
 
-    router.route("/auth/code").link(() => AuthRedirectController(authServer));
+    router.route("/auth/code").link(() => AuthRedirectController(
+          authServer,
+          delegate: RenderDelegate(),
+        ));
 
     router
         .route('/register')
         .link(() => RegisterController(context, authServer));
-
-    router.route('/login').link(() => LoginController(context, authServer));
 
     router
         .route('/users/[:id]')
@@ -80,5 +80,51 @@ class TravelPlannerApiChannel extends ApplicationChannel {
     //.link(() => Authorizer(authServer))!
 
     return router;
+  }
+}
+
+class RenderDelegate implements AuthRedirectControllerDelegate {
+  @override
+  Future<String?> render(
+    AuthRedirectController forController,
+    Uri requestUri,
+    String? responseType,
+    String? clientID,
+    String? state,
+    String? scope,
+  ) async {
+    final html = """
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+
+<body>
+<div class="container">
+    <h1>Login</h1>
+    <form action="${requestUri.path}" method="POST">
+        <input type="hidden" name="state" value="$state">
+        <input type="hidden" name="client_id" value="$clientID">
+        <input type="hidden" name="response_type" value="$responseType">
+        <div class="form-group">
+            <label for="username">Email</label>
+            <input type="text" class="form-control" name="username" placeholder="Please enter your user name">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" name="password" placeholder="Please enter your password">
+        </div>
+        <button type="submit" class="btn btn-success">Login</button>
+    </form>
+</div>
+</body>
+
+</html>
+    """;
+
+    return html;
   }
 }
