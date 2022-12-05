@@ -6,6 +6,7 @@ import 'package:travel_planner_api/travel_planner_api.dart';
 import 'configuration.dart';
 import 'controllers/heroes_controller.dart';
 import 'controllers/user_controller.dart';
+import 'web/login.dart';
 
 /// This type initializes an application.
 ///
@@ -93,37 +94,7 @@ class RenderDelegate implements AuthRedirectControllerDelegate {
     String? state,
     String? scope,
   ) async {
-    final html = """
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-</head>
-
-<body>
-<div class="container">
-    <h1>Login</h1>
-    <form action="${requestUri.path}" method="POST">
-        <input type="hidden" name="state" value="$state">
-        <input type="hidden" name="client_id" value="$clientID">
-        <input type="hidden" name="response_type" value="$responseType">
-        <div class="form-group">
-            <label for="username">Email</label>
-            <input type="text" class="form-control" name="username" placeholder="Please enter your user name">
-        </div>
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" class="form-control" name="password" placeholder="Please enter your password">
-        </div>
-        <button type="submit" class="btn btn-success">Login</button>
-    </form>
-</div>
-</body>
-
-</html>
-    """;
+    final html = HtmlPages.loginPage(requestUri, responseType, clientID, state);
 
     return html;
   }

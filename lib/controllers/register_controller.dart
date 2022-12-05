@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:conduit/conduit.dart';
 
 import '../models/response/error/error.dart';
@@ -9,6 +11,13 @@ class RegisterController extends ResourceController {
 
   final ManagedContext? context;
   final AuthServer? authServer;
+
+  @Operation.get()
+  Future<Response> getRegisterPage() async {
+    final file = File("web/register.html");
+    return Response.ok(file.readAsStringSync())
+      ..contentType = ContentType("application", "html");
+  }
 
   @Operation.post()
   Future<Response> createUser(@Bind.body() User user) async {
