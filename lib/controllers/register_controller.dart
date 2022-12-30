@@ -14,9 +14,11 @@ class RegisterController extends ResourceController {
 
   @Operation.get()
   Future<Response> getRegisterPage() async {
-    final file = File("web/register.html");
-    return Response.ok(file.readAsStringSync())
-      ..contentType = ContentType("application", "html");
+    final file = File("lib/web/register.html");
+    return Response.ok(file.openRead())
+      ..encodeBody = false
+      ..contentType = ContentType.html
+      ..cachePolicy = const CachePolicy(preventCaching: true);
   }
 
   @Operation.post()

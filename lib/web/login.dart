@@ -12,6 +12,7 @@ class HtmlPages {
 
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Login</title>
         <link
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -51,7 +52,7 @@ class HtmlPages {
                         <h2 class="fw-bold mb-2 text-uppercase">Login</h2>
                         <p class="text-white-50 mb-5">Please enter your email and password!</p>
 
-                        <form class="needs-validation" action="${requestUri.path}" method="POST" novalidate>
+                        <form class="needs-validation" novalidate>
                           <input type="hidden" name="state" value="$state">
                           <input type="hidden" name="client_id" value="$clientID">
                           <input type="hidden" name="response_type" value="$responseType">
@@ -99,6 +100,8 @@ class HtmlPages {
       src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.1/mdb.min.js"
     ></script>
 
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
     (() => {
       'use strict';
@@ -112,6 +115,61 @@ class HtmlPages {
             event.stopPropagation();
           }
           form.classList.add('was-validated');
+
+          if(form.checkValidity()){
+            event.preventDefault();
+            const details = {
+              'username': form.elements['username'].value,
+              'password': form.elements['password'].value,
+            };
+            var formBody = [];
+            for (var property in details) {
+              var encodedKey = encodeURIComponent(property);
+              var encodedValue = encodeURIComponent(details[property]);
+              formBody.push(encodedKey + "=" + encodedValue);
+            }
+            formBody = formBody.join("&");
+
+            fetch(`${requestUri.path}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formBody
+            })
+            .then(async (response) => {
+              let url = await response.url;
+
+              console.log(url)
+
+              Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'You are now logged in.',
+                confirmButtonText: "Done",
+                allowOutsideClick: false,
+                width: "90%"
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  window.location.replace(url);
+                }
+              })
+            })
+            .catch((err) => {
+              Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Something went wrong.',
+                confirmButtonText: "Retry",
+                allowOutsideClick: false,
+                width: "90%"
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  Swal.close();
+                }
+              })
+            })
+          }
         }, false);
       });
     })();
