@@ -118,13 +118,14 @@ class HtmlPages {
 
           if(form.checkValidity()){
             event.preventDefault();
-            var params = new URLSearchParams();
-            params.append('username', form.elements['username'].value);
-            params.append('password', form.elements['password'].value);
-            params.append('client_id', form.elements['client_id'].value);
-            params.append('response_type', form.elements['response_type'].value);
-            params.append('state', form.elements['state'].value);
+            
             try{
+              var params = new URLSearchParams();
+              params.append('username', form.elements['username'].value);
+              params.append('password', form.elements['password'].value);
+              params.append('client_id', form.elements['client_id'].value);
+              params.append('response_type', form.elements['response_type'].value);
+              params.append('state', form.elements['state'].value);
               
               const response = await fetch("http://localhost:8888${requestUri.path}",{
                 method: 'POST',
@@ -135,9 +136,23 @@ class HtmlPages {
               });
               const url = response.url;
 
-              console.log("URL", url)
-
-              window.location.replace(url);
+              const urlSearchParams = new URLSearchParams(url);
+              const urlParams = Object.fromEntries(urlSearchParams.entries());
+              if(urlParams.hasOwnProperty('error')){
+                let result = await Swal.fire({
+                  icon: 'error',
+                  title: 'Error!',
+                  text: 'Incorrect email/password',
+                  confirmButtonText: "Retry",
+                  allowOutsideClick: false,
+                  width: "90%"
+                });
+                if (result.isConfirmed) {
+                  Swal.close();
+                }
+              } else {
+                window.location.replace(url);
+              }
             } catch (err){
               console.log(err)
               Swal.fire({

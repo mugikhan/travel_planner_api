@@ -111,6 +111,8 @@
 
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 <script>
   function onChange() {
     const password = document.querySelector('input[id=password]');
@@ -128,7 +130,7 @@
     const forms = document.querySelectorAll('.needs-validation');
 
     Array.prototype.slice.call(forms).forEach((form) => {
-      form.addEventListener('submit', (event) => {
+      form.addEventListener('submit', async (event) => {
         if (!form.checkValidity()) {
       event.preventDefault();
       event.stopPropagation();
@@ -144,47 +146,52 @@
           "password": form.elements['password'].value,
         };
 
-        fetch(`${window.location}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(values)
-        })
-        .then(async (response) => {
-          if(!response.ok){
-            let data = await response.json();
-            throw Error(data)
-          }
-          let data = await response.json();
-
-          Swal.fire({
+        try{
+          let response = await axios.post(`${window.location}`, {
+            firstName: form.elements['firstName'].value,
+            lastName: form.elements['lastName'].value,
+            username: form.elements['username'].value,
+            password: form.elements['password'].value,
+          });
+          
+          let result = await Swal.fire({
             icon: 'success',
             title: 'Success!',
             text: 'Congratulations, your account has been successfully created.',
             confirmButtonText: "Done",
             allowOutsideClick: false,
             width: "90%"
-          }).then((result) => {
-            if (result.isConfirmed) {
-              window.location.replace(`${window.location}?success`);
-            }
-          })
-        })
-        .catch((err) => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: 'Something went wrong while creating your account.',
-            confirmButtonText: "Retry",
-            allowOutsideClick: false,
-            width: "90%"
-          }).then((result) => {
+          });
+          if (result.isConfirmed) {
+            window.location.replace(`${window.location}?register=success`);
+          }
+        } catch (error){
+          if(error.response){
+            let result = await Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: error.response.data['message'],
+              confirmButtonText: "Retry",
+              allowOutsideClick: false,
+              width: "90%"
+            });
             if (result.isConfirmed) {
               Swal.close();
             }
-          })
-        })
+          } else if(error.request){
+            let result = await Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: 'Something went wrong while creating your account.',
+              confirmButtonText: "Retry",
+              allowOutsideClick: false,
+              width: "90%"
+            });
+            if (result.isConfirmed) {
+              Swal.close();
+            }
+          }
+        }
       }
     }, false);
     });

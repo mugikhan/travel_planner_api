@@ -56,13 +56,32 @@ class RegisterController extends ResourceController {
       ..values.firstName = user.firstName
       ..values.lastName = user.lastName;
 
-    final u = await query.insert();
-
-    return Response.ok(
-      SuccessResponse(
-        data: {},
-        message: "Successfully registered ${u.username}",
-      ),
-    );
+    try {
+      final u = await query.insert();
+      return Response.ok(
+        SuccessResponse(
+          data: {},
+          message: "Successfully registered ${u.username}",
+        ),
+      );
+    } catch (error) {
+      if (error is QueryException) {
+        return Response.badRequest(
+          body: const ErrorResponse(
+            type: "entity already exists",
+            message: "That email address is already registered.",
+            code: 400,
+          ),
+        );
+      } else {
+        return Response.badRequest(
+          body: const ErrorResponse(
+            type: "unknown",
+            message: "Something went wrong.",
+            code: 400,
+          ),
+        );
+      }
+    }
   }
 }
