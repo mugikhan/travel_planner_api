@@ -1,5 +1,6 @@
 import 'package:conduit/managed_auth.dart';
 import 'package:travel_planner_api/controllers/register_controller.dart';
+import 'package:travel_planner_api/controllers/success_controller.dart';
 import 'package:travel_planner_api/models/user.dart';
 import 'package:travel_planner_api/travel_planner_api.dart';
 

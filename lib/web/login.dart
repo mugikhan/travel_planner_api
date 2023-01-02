@@ -102,8 +102,6 @@ class HtmlPages {
 
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
     <script>
     (() => {
       'use strict';
@@ -127,7 +125,6 @@ class HtmlPages {
             params.append('response_type', form.elements['response_type'].value);
             params.append('state', form.elements['state'].value);
             try{
-              // const response = await axios.post("http://localhost:8888${requestUri.path}", params);
               
               const response = await fetch("http://localhost:8888${requestUri.path}",{
                 method: 'POST',
@@ -141,46 +138,6 @@ class HtmlPages {
               console.log("URL", url)
 
               window.location.replace(url);
-
-              const urlParams = new Proxy(new URLSearchParams(window.location.search), {
-                get: (searchParams, prop) => searchParams.get(prop),
-              });
-              let authCode = urlParams.code;
-              console.log("CODE", authCode);
-
-              const authCodeDetails = {
-                'grant_type': 'authorization_code',
-                'code': authCode,
-              }
-              var codeBody = [];
-              for (var property in authCodeDetails) {
-                var encodedKey = encodeURIComponent(property);
-                var encodedValue = encodeURIComponent(authCodeDetails[property]);
-                codeBody.push(encodedKey + "=" + encodedValue);
-              }
-              codeBody = codeBody.join("&");
-
-              console.log("BODY", codeBody);
-
-              params = new URLSearchParams();
-              params.append('grant_type', 'authorization_code',);
-              params.append('code', authCode);
-
-              const codeRes = await fetch("http://localhost:8888/auth/token",{
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: params,
-              });
-
-              if(!codeRes.ok){
-                let data = await codeRes.json();
-                throw Error(data)
-              }
-              let data = await codeRes.json();
-
-              console.log(JSON.stringify(data));
             } catch (err){
               console.log(err)
               Swal.fire({
