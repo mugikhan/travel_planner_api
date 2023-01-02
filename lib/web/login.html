@@ -96,15 +96,76 @@
 
   const forms = document.querySelectorAll('.needs-validation');
 
-  Array.prototype.slice.call(forms).forEach((form) => {
-    form.addEventListener('submit', (event) => {
-      if (!form.checkValidity()) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      form.classList.add('was-validated');
-    }, false);
-  });
+      Array.prototype.slice.call(forms).forEach((form) => {
+        form.addEventListener('submit', (event) => {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+
+          if(form.checkValidity()){
+            event.preventDefault();
+            const details = {
+              'username': form.elements['username'].value,
+              'password': form.elements['password'].value,
+              'client_id': form.elements['client_id'].value,
+              'response_type': form.elements['response_type'].value,
+              'state': form.elements['state'].value
+            }
+            var formBody = [];
+            for (var property in details) {
+              var encodedKey = encodeURIComponent(property);
+              var encodedValue = encodeURIComponent(details[property]);
+              formBody.push(encodedKey + "=" + encodedValue);
+            }
+            formBody = formBody.join("&");
+            console.log(formBody);
+
+            console.log(`${window.location}`)
+
+            fetch(`${requestUri.path}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formBody
+            })
+            .then(async (response) => {
+              let url = await response.url;
+
+              console.log(url)
+
+              Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'You are now logged in.',
+                confirmButtonText: "Done",
+                allowOutsideClick: false,
+                width: "90%"
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  window.location.replace(url);
+                }
+              })
+            })
+            .catch((err) => {
+              Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Something went wrong.',
+                confirmButtonText: "Retry",
+                allowOutsideClick: false,
+                width: "90%"
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  Swal.close();
+                }
+              })
+            })
+          }
+        }, false);
+      });
 })();
 </script>
 

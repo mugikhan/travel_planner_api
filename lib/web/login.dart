@@ -102,6 +102,8 @@ class HtmlPages {
 
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <script>
     (() => {
       'use strict';
@@ -109,7 +111,7 @@ class HtmlPages {
       const forms = document.querySelectorAll('.needs-validation');
 
       Array.prototype.slice.call(forms).forEach((form) => {
-        form.addEventListener('submit', (event) => {
+        form.addEventListener('submit', async (event) => {
           if (!form.checkValidity()) {
             event.preventDefault();
             event.stopPropagation();
@@ -118,44 +120,69 @@ class HtmlPages {
 
           if(form.checkValidity()){
             event.preventDefault();
-            const details = {
-              'username': form.elements['username'].value,
-              'password': form.elements['password'].value,
-            };
-            var formBody = [];
-            for (var property in details) {
-              var encodedKey = encodeURIComponent(property);
-              var encodedValue = encodeURIComponent(details[property]);
-              formBody.push(encodedKey + "=" + encodedValue);
-            }
-            formBody = formBody.join("&");
-
-            fetch(`${requestUri.path}`, {
+            var params = new URLSearchParams();
+            params.append('username', form.elements['username'].value);
+            params.append('password', form.elements['password'].value);
+            params.append('client_id', form.elements['client_id'].value);
+            params.append('response_type', form.elements['response_type'].value);
+            params.append('state', form.elements['state'].value);
+            try{
+              // const response = await axios.post("http://localhost:8888${requestUri.path}", params);
+              
+              const response = await fetch("http://localhost:8888${requestUri.path}",{
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: formBody
-            })
-            .then(async (response) => {
-              let url = await response.url;
+                body: params,
+              });
+              const url = response.url;
 
-              console.log(url)
+              console.log("URL", url)
 
-              Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'You are now logged in.',
-                confirmButtonText: "Done",
-                allowOutsideClick: false,
-                width: "90%"
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  window.location.replace(url);
-                }
-              })
-            })
-            .catch((err) => {
+              window.location.replace(url);
+
+              const urlParams = new Proxy(new URLSearchParams(window.location.search), {
+                get: (searchParams, prop) => searchParams.get(prop),
+              });
+              let authCode = urlParams.code;
+              console.log("CODE", authCode);
+
+              const authCodeDetails = {
+                'grant_type': 'authorization_code',
+                'code': authCode,
+              }
+              var codeBody = [];
+              for (var property in authCodeDetails) {
+                var encodedKey = encodeURIComponent(property);
+                var encodedValue = encodeURIComponent(authCodeDetails[property]);
+                codeBody.push(encodedKey + "=" + encodedValue);
+              }
+              codeBody = codeBody.join("&");
+
+              console.log("BODY", codeBody);
+
+              params = new URLSearchParams();
+              params.append('grant_type', 'authorization_code',);
+              params.append('code', authCode);
+
+              const codeRes = await fetch("http://localhost:8888/auth/token",{
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params,
+              });
+
+              if(!codeRes.ok){
+                let data = await codeRes.json();
+                throw Error(data)
+              }
+              let data = await codeRes.json();
+
+              console.log(JSON.stringify(data));
+            } catch (err){
+              console.log(err)
               Swal.fire({
                 icon: 'error',
                 title: 'Error!',
@@ -168,7 +195,7 @@ class HtmlPages {
                   Swal.close();
                 }
               })
-            })
+            }
           }
         }, false);
       });
